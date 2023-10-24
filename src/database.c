@@ -150,11 +150,16 @@ int loadLetters()
             lineNum++;
             break;
         case 3:
-            if (value == status_names[TEMPLATE]){
+            if (value == status_names[TEMPLATE])
+            {
                 letter->status = TEMPLATE;
-            }else if(value == status_names[SENT]){
+            }
+            else if (value == status_names[SENT])
+            {
                 letter->status = SENT;
-            }else{
+            }
+            else
+            {
                 letter->status = SEEN;
             }
             letters[letterCount] = *letter;
@@ -169,8 +174,8 @@ int loadLetters()
     return 0;
 }
 
-
-int insertPostman(Post postman){
+int insertPostman(Post postman)
+{
     FILE *file = fopen("../Database/post.txt", "a");
 
     if (file == NULL)
@@ -186,5 +191,104 @@ int insertPostman(Post postman){
     fprintf(file, "Mode:%s\n", mode_names[postman.mode]);
 
     fclose(file);
+    return 0;
+}
+
+int loadPosts()
+{
+    FILE *file = fopen("../Database/post.txt", "r");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+    Person findPersonById(int id);
+    Letter findLetterById(int id);
+
+    Post *post;
+    char chunk[512];
+    int lineNum = 0;
+    while (fgets(chunk, sizeof(chunk), file) != NULL)
+    {
+        char *colon_pos = strchr(chunk, ':');
+        char *value;
+        if (colon_pos != NULL)
+        {
+            value = colon_pos + 1;
+            size_t newline_pos = strcspn(value, "\n");
+            value[newline_pos] = '\0';
+        }
+
+        switch (lineNum)
+        {
+        case 0:
+            post = (Post *)malloc(sizeof(Post));
+            post->id = atoi(value);
+            lineNum++;
+            break;
+        case 1:
+            post->sender = findPersonById(atoi(value));
+            lineNum++;
+            break;
+        case 2:
+            post->reciever = findPersonById(atoi(value));
+            lineNum++;
+            break;
+        case 3:
+            post->letter = findLetterById(atoi(value));
+            lineNum++;
+            break;
+        case 4:
+            if (value == mode_names[NORMAL])
+            {
+                post->mode = NORMAL;
+            }
+            else if (value == status_names[WHISPER])
+            {
+                post->mode = WHISPER;
+            }
+            else
+            {
+                post->mode = NORMAL;
+            }
+            posts[postCount] = *post;
+            lineNum = 0;
+            postCount++;
+            break;
+        default:
+            break;
+        }
+    }
+    printf("Posts Loaded\n");
+    return 0;
+}
+
+Person findPersonById(int id)
+{
+    for (int i = 0; i < userCount; i++)
+    {
+        if (users[i].id == id)
+        {
+            return users[i];
+        }
+    }
+}
+
+Letter findLetterById(int id)
+{
+    for (int i = 0; i < letterCount; i++)
+    {
+        if (letters[i].id == id)
+        {
+            return letters[i];
+        }
+    }
+}
+
+int loadAllData(){
+    loadPersons();
+    loadLetters();
+    loadPosts();
     return 0;
 }
