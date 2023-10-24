@@ -1,0 +1,5 @@
+ID:0
+Sender ID:0
+Reciever ID:1
+Letter ID:0
+Mode:WHISPER

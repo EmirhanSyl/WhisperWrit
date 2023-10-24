@@ -3,11 +3,14 @@
 #include <string.h>
 #include "../include/person.h"
 #include "../include/letter.h"
-
+#include "../include/post.h"
 
 static Letter letters[100];
+static int letterCount;
 static Person users[100];
-
+static int userCount;
+static Post posts[500];
+static int postCount;
 
 int insertPerson(Person person)
 {
@@ -29,7 +32,8 @@ int insertPerson(Person person)
     return 0;
 }
 
-int loadPersons(){
+int loadPersons()
+{
     FILE *file = fopen("../Database/person.txt", "r");
 
     if (file == NULL)
@@ -51,9 +55,8 @@ int loadPersons(){
             value = colon_pos + 1;
             size_t newline_pos = strcspn(value, "\n");
             value[newline_pos] = '\0';
-            printf("Value: %s\n", value);
         }
-    
+
         switch (lineNum)
         {
         case 0:
@@ -82,9 +85,106 @@ int loadPersons(){
         default:
             break;
         }
-
-        
     }
-    
-   
+    userCount = personCount;
+    printf("Persons Loaded\n");
+    return 0;
+}
+
+int insertLetter(Letter letter)
+{
+    FILE *file = fopen("../Database/letter.txt", "a");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    fprintf(file, "ID:%d\n", letter.id);
+    fprintf(file, "Subject:%s\n", letter.subject);
+    fprintf(file, "Content:%s\n", letter.content);
+    fprintf(file, "Status:%s\n", status_names[letter.status]);
+
+    fclose(file);
+    return 0;
+}
+
+int loadLetters()
+{
+    FILE *file = fopen("../Database/letter.txt", "r");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    Letter *letter;
+    char chunk[512];
+    int lineNum = 0;
+    while (fgets(chunk, sizeof(chunk), file) != NULL)
+    {
+        char *colon_pos = strchr(chunk, ':');
+        char *value;
+        if (colon_pos != NULL)
+        {
+            value = colon_pos + 1;
+            size_t newline_pos = strcspn(value, "\n");
+            value[newline_pos] = '\0';
+        }
+
+        switch (lineNum)
+        {
+        case 0:
+            letter = (Letter *)malloc(sizeof(Letter));
+            letter->id = atoi(value);
+            lineNum++;
+            break;
+        case 1:
+            strcpy(letter->subject, value);
+            lineNum++;
+            break;
+        case 2:
+            strcpy(letter->content, value);
+            lineNum++;
+            break;
+        case 3:
+            if (value == status_names[TEMPLATE]){
+                letter->status = TEMPLATE;
+            }else if(value == status_names[SENT]){
+                letter->status = SENT;
+            }else{
+                letter->status = SEEN;
+            }
+            letters[letterCount] = *letter;
+            lineNum = 0;
+            letterCount++;
+            break;
+        default:
+            break;
+        }
+    }
+    printf("Letters Loaded\n");
+    return 0;
+}
+
+
+int insertPostman(Post postman){
+    FILE *file = fopen("../Database/post.txt", "a");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    fprintf(file, "ID:%d\n", postman.id);
+    fprintf(file, "Sender ID:%d\n", postman.sender.id);
+    fprintf(file, "Reciever ID:%d\n", postman.reciever.id);
+    fprintf(file, "Letter ID:%d\n", postman.letter.id);
+    fprintf(file, "Mode:%s\n", mode_names[postman.mode]);
+
+    fclose(file);
+    return 0;
 }
