@@ -2,6 +2,13 @@
     "files.associations": {
         "stdio.h": "c",
         "letter.h": "c",
-        "person.h": "c"
+        "person.h": "c",
+        "typeinfo": "c",
+        "system_error": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     }
 }
