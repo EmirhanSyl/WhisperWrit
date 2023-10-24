@@ -14,5 +14,6 @@ typedef struct Letter
 } Letter;
 
 Letter createLetter(int id, char *subject, char *content, Status status);
+Post sendLetter();
 
 #endif

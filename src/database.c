@@ -286,6 +286,16 @@ Letter findLetterById(int id)
     }
 }
 
+Person login(char *mail, char *psw){
+    for (int i = 0; i < userCount; i++)
+    {
+        if (users[i].mail == mail && users[i].password == psw)
+        {
+            return users[i];
+        }
+    }
+}
+
 int loadAllData(){
     loadPersons();
     loadLetters();

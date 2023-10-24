@@ -4,6 +4,49 @@
 #include "../include/person.h"
 #include "database.c"
 
+Post *recievedPosts(int id)
+{
+    Post *recievedPostsArr = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
+
+    if (recievedPostsArr == NULL)
+    {
+        return NULL;
+    }
+
+    int count = 0;
+    for (int i = 0; i < postCount; i++)
+    {
+        if (posts[i].reciever.id == id)
+        {
+            recievedPostsArr[count] = posts[i];
+            count++;
+        }
+    }
+
+    return recievedPostsArr;
+}
+
+Post *sentPosts(int id)
+{
+    Post *recievedPostsArr = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
+
+    if (recievedPostsArr == NULL)
+    {
+        return NULL;
+    }
+
+    int count = 0;
+    for (int i = 0; i < postCount; i++)
+    {
+        if (posts[i].sender.id == id)
+        {
+            recievedPostsArr[count] = posts[i];
+            count++;
+        }
+    }
+
+    return recievedPostsArr;
+}
 
 Person createPerson(int id, char *name, char *surname, char *mail, char *password)
 {
@@ -18,4 +61,3 @@ Person createPerson(int id, char *name, char *surname, char *mail, char *passwor
     loadPersons();
     return person;
 }
-

@@ -6,6 +6,7 @@
 typedef enum {NORMAL, WHISPER} MODE;
 static const char *const mode_names[];
 
+typedef struct Person Person;
 typedef struct Post
 {
     int id;

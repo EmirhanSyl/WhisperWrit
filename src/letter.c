@@ -19,3 +19,4 @@ Letter createLetter(int id, char *subject, char *content, Status status)
     insertLetter(letter);
     return letter;
 }
+
