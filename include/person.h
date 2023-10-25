@@ -14,6 +14,6 @@ typedef struct Person
 Post *recievedPosts(int id);
 Post *sentPosts(int id);
 
-Person createPerson(int id, char *name, char *surname, char *mail, char *password);
+Person *createPerson(int id, char *name, char *surname, char *password);
 
 #endif

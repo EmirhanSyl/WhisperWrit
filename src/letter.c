@@ -17,6 +17,7 @@ Letter createLetter(int id, char *subject, char *content, Status status)
     letter.status = status;
 
     insertLetter(letter);
+    loadLetters();
     return letter;
 }
 

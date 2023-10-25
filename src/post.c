@@ -16,5 +16,6 @@ Post sendPostman(int id, Person sender, Person reciever, Letter letter,  MODE mo
     post.mode = mode;
 
     insertPostman(post);
+    loadPosts();
     return post;
 }

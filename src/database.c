@@ -286,14 +286,17 @@ Letter findLetterById(int id)
     }
 }
 
-Person login(char *mail, char *psw){
+Person *login(char *mail, char *psw){
+
     for (int i = 0; i < userCount; i++)
     {
-        if (users[i].mail == mail && users[i].password == psw)
+        if (strcmp(users[i].mail, mail) == 0 && strcmp(users[i].password, psw) == 0)
         {
-            return users[i];
+            return &users[i];
         }
     }
+    Person *nullP = NULL;
+    return nullP;
 }
 
 int loadAllData(){

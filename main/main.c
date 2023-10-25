@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ctype.h>
 #include "../src/person.c"
 #include "../src/letter.c"
 #include "../src/post.c"
@@ -18,17 +19,22 @@ int main() {
 
     loadAllData();
     
+    Person *account;
     int option;
-    int isLoggedIn = 0; // A flag to track if the user is logged in
+    int isLoggedIn = 0; 
 
     while (1)
     {
         printf("Welcome!\n");
         if (isLoggedIn)
         {
-            printf("Welcome, $username\n");
+            printf("Welcome, %s %s\n", account->firstName, account->lastName);
             printf("1- Create Letter\n");
-            printf("2- Logout\n");
+            printf("2- Show Recieved Letters\n");
+            printf("3- Show Sent Letters\n");
+            printf("4- Show Template Letters\n");
+            printf("5- Show Contact List\n");
+            printf("6- Logout\n");
         }
         else
         {
@@ -42,13 +48,24 @@ int main() {
 
         if (isLoggedIn)
         {
-            // Handle options after login (e.g., create letter, logout)
             switch (option)
             {
             case 1:
                 // Implement create letter
                 break;
             case 2:
+                // Implement Show Recieved Letters
+                break;
+            case 3:
+                // Implement Show Sent Letters
+                break;
+            case 4:
+                // Implement Show Template Letters
+                break;
+            case 5:
+                // Implement Show Contact List
+                break;
+            case 6:
                 isLoggedIn = 0;
                 break;
             default:
@@ -58,6 +75,8 @@ int main() {
         }
         else
         {
+            char firstName[30];
+            char lastName[30];
             char mail[50];
             char password[30];
             switch (option)
@@ -71,10 +90,12 @@ int main() {
                 scanf("%s", password);
 
                 printf("Logging in...\n");
-                Person account = login(mail, password);
-                if (account.mail != '\0')
+                account = login(mail, password);
+                if (account != NULL)
                 {
                     printf("Successfuly logged in!\n");
+                    isLoggedIn = 1;
+                    break;
                 }else{
                     printf("User not found! Please try again.\n");
                     continue;
@@ -82,7 +103,19 @@ int main() {
                 
                 break;
             case 2:
-                // Implement register
+                printf("Enter your first name: ");
+                scanf("%s", firstName);
+
+                printf("Enter your last name: ");
+                scanf("%s", lastName);
+
+                printf("Enter your password: ");
+                scanf("%s", password);
+
+
+                account = createPerson(userCount, firstName, lastName, password);
+                printf("Account created succesfully!\n");
+                isLoggedIn = 1;
                 break;
             case 3:
                 printf("Goodbye!\n");
@@ -93,8 +126,6 @@ int main() {
             }
         }
     }
-
-    return 0;
 
     return 0;
 }
