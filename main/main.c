@@ -48,10 +48,19 @@ int main() {
 
         if (isLoggedIn)
         {
+            char subject[100];
+            char message[500];
             switch (option)
             {
             case 1:
                 // Implement create letter
+                printf("Subject: \n");
+                scanf("%s", subject);
+
+                printf("Message: \n");
+                scanf("%s", subject);
+
+                createLetter(letterCount, subject, message, TEMPLATE);
                 break;
             case 2:
                 // Implement Show Recieved Letters
