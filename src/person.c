@@ -23,6 +23,9 @@ Post *recievedPosts(int id)
             count++;
         }
     }
+    Post lastPost;
+    lastPost.id = -1;
+    recievedPostsArr[count] = lastPost;
 
     return recievedPostsArr;
 }
@@ -68,7 +71,6 @@ Person *createPerson(int id, char *name, char *surname, char *password)
     person->id = id;
     strcpy(person->firstName, name);
     strcpy(person->lastName, surname);
-
 
     for (int i = 0; i < strlen(name); i++)
     {
