@@ -91,6 +91,10 @@ int loadPersons()
     return 0;
 }
 
+int updatePerson(Person person){
+
+}
+
 int insertLetter(Letter letter)
 {
     FILE *file = fopen("../Database/letter.txt", "a");

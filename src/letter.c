@@ -8,15 +8,15 @@ static const char *const status_names[] = {
     [SENT] = "SENT",
     [SEEN] = "SEEN"};
 
-Letter createLetter(int id, char *subject, char *content, Status status)
+Letter *createLetter(int id, char *subject, char *content, Status status)
 {
-    Letter letter;
-    letter.id = id;
-    strcpy(letter.subject, subject);
-    strcpy(letter.content, content);
-    letter.status = status;
+    Letter *letter = malloc(sizeof(Letter));
+    letter->id = id;
+    strcpy(letter->subject, subject);
+    strcpy(letter->content, content);
+    letter->status = status;
 
-    insertLetter(letter);
+    insertLetter(*letter);
     loadLetters();
     return letter;
 }

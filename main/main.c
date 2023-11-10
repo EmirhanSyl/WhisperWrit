@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include "../src/person.c"
 #include "../src/letter.c"
@@ -34,6 +35,29 @@ void readPost(Post post){
         // Remove Post logic... gcc
     }
     
+}
+
+int postLetter(Person *sender, char *recieverMail, Letter createdLetter, int whisperMode){
+    MODE mode = (whisperMode) ? WHISPER: NORMAL;
+    Person reciever;
+
+    bool isUserExists = false;
+    for (int i = 0; i < userCount; i++)
+    {
+        if (strcmp(users[i].mail, recieverMail) == 0)
+        {
+            reciever = users[i];
+            isUserExists = true;
+        }
+    }
+    if (!isUserExists)
+    {
+        printf("Given mail is not exists!");
+        return 1;
+    }
+    
+    sendPostman(postCount, *sender, reciever, createdLetter, mode);
+    return 1;
 }
 
 int main()
@@ -82,20 +106,37 @@ int main()
         if (isLoggedIn)
         {
             Post *recieved;
+            Letter *createdLetter;
             int recievedPostCount = 0;
             char subject[100];
             char message[500];
+            char recieverMail[50];
             switch (option)
             {
             case 1:
                 // Implement create letter
                 printf("Subject: \n");
-                scanf("%s", subject);
+                gets(subject);
 
                 printf("Message: \n");
-                scanf("%s", subject);
+                gets(subject);
 
-                createLetter(letterCount, subject, message, TEMPLATE);
+                createdLetter = createLetter(letterCount, subject, message, TEMPLATE);
+
+                printf("Letter Wrote! Do you want to send it now? (0 - no & 1 - yes) \n");
+                scanf("%d", option);
+                if (option)
+                {
+                    printf("Reciever Mail: \n");
+                    scanf("%s\n", recieverMail);
+                    printf("Whisper Mode: (0-Off & 1-On)\n");
+                    scanf("%d\n", option);
+
+                    postLetter(account, recieverMail, *createdLetter, option);
+                }else{
+                    printf("Letter saved as template. You can sand it later. \n");
+                }
+                
                 break;
             case 2:
                 // Implement Show Recieved Letters
@@ -105,8 +146,12 @@ int main()
                     writePostInfo(recieved[recievedPostCount]);
                     recievedPostCount++;
                 }
+
+                if (recievedPostCount == 0){printf("No recieved Message\n"); break;}
+
                 printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
                 scanf("%d", &option);
+                
                 if (option >= 0 && option <= recievedPostCount)
                 {
                     readPost(recieved[option]);
@@ -123,6 +168,13 @@ int main()
                     writePostInfo(recieved[recievedPostCount]);
                     recievedPostCount++;
                 }
+
+                if (recievedPostCount == 0)
+                {
+                    printf("No recieved Message!\n");
+                    break;
+                }
+
                 printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
                 scanf("%d", &option);
                 if (option >= 0 && option <= recievedPostCount)

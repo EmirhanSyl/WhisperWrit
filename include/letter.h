@@ -13,7 +13,7 @@ typedef struct Letter
     Status status;
 } Letter;
 
-Letter createLetter(int id, char *subject, char *content, Status status);
+Letter *createLetter(int id, char *subject, char *content, Status status);
 Post sendLetter();
 
 #endif
