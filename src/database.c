@@ -91,8 +91,8 @@ int loadPersons()
     return 0;
 }
 
-int updatePerson(Person person){
-
+int updatePerson(Person person)
+{
 }
 
 int insertLetter(Letter letter)
@@ -207,9 +207,10 @@ int loadPosts()
         printf("Error while opening the file!");
         return 1;
     }
-    Person findPersonById(int id);
+    Person *findPersonById(int id);
     Letter findLetterById(int id);
 
+    Person templatePerson = {.id = -1, .mail = "template"};
     Post *post;
     char chunk[512];
     int lineNum = 0;
@@ -232,11 +233,11 @@ int loadPosts()
             lineNum++;
             break;
         case 1:
-            post->sender = findPersonById(atoi(value));
+            post->sender = *findPersonById(atoi(value));
             lineNum++;
             break;
         case 2:
-            post->reciever = findPersonById(atoi(value));
+            post->reciever = (findPersonById(atoi(value)) == NULL) ? templatePerson : *findPersonById(atoi(value));
             lineNum++;
             break;
         case 3:
@@ -268,15 +269,17 @@ int loadPosts()
     return 0;
 }
 
-Person findPersonById(int id)
+Person *findPersonById(int id)
 {
     for (int i = 0; i < userCount; i++)
     {
         if (users[i].id == id)
         {
-            return users[i];
+            return &users[i];
         }
     }
+    Person *nullP = NULL;
+    return nullP;
 }
 
 Letter findLetterById(int id)
@@ -290,7 +293,8 @@ Letter findLetterById(int id)
     }
 }
 
-Person *login(char *mail, char *psw){
+Person *login(char *mail, char *psw)
+{
 
     for (int i = 0; i < userCount; i++)
     {
@@ -303,7 +307,8 @@ Person *login(char *mail, char *psw){
     return nullP;
 }
 
-int loadAllData(){
+int loadAllData()
+{
     loadPersons();
     loadLetters();
     loadPosts();

@@ -3,14 +3,10 @@ Subject:test
 Content:test
 Status:TEMPLATE
 ID:1
-Subject:fgjkjjkkjjk
-Content:es@g.c
-Status:TEMPLATE
-ID:2
-Subject:sdfghhkkjjlhkgkfhdg dfgh gfhdddf fktyuryueru
-Content:es@g.c
+Subject:a test1
+Content:a test
 Status:TEMPLATE
 ID:3
-Subject:test test test
-Content:es@g.c
+Subject:b test2
+Content:b test
 Status:TEMPLATE

@@ -41,6 +41,13 @@ int postLetter(Person *sender, char *recieverMail, Letter createdLetter, int whi
     MODE mode = (whisperMode) ? WHISPER: NORMAL;
     Person reciever;
 
+    if (strcmp(recieverMail, "null") == 0)
+    {
+        reciever.id = -1;
+        sendPostman(postCount, *sender, reciever, createdLetter, mode);
+        return 0;
+    }
+    
     bool isUserExists = false;
     for (int i = 0; i < userCount; i++)
     {
@@ -57,7 +64,7 @@ int postLetter(Person *sender, char *recieverMail, Letter createdLetter, int whi
     }
     
     sendPostman(postCount, *sender, reciever, createdLetter, mode);
-    return 1;
+    return 0;
 }
 
 int main()
@@ -75,6 +82,11 @@ int main()
     // printf("Post Sender: %s\n", recieved.sender.mail);
 
     loadAllData();
+    for (int i = 0; i < postCount; i++)
+    {
+        readPost(posts[i]);
+    }
+    
 
     Person *account;
     int option;
@@ -107,6 +119,7 @@ int main()
         {
             Post *recieved;
             Letter *createdLetter;
+            Letter *createdPost;
             int recievedPostCount = 0;
             char subject[100];
             char message[500];
@@ -115,26 +128,31 @@ int main()
             {
             case 1:
                 // Implement create letter
-                printf("Subject: \n");
+                printf("Subject: ");
+                fflush(stdin);
                 gets(subject);
 
-                printf("Message: \n");
-                gets(subject);
+                printf("Message: ");
+                fflush(stdin);
+                gets(message);
 
                 createdLetter = createLetter(letterCount, subject, message, TEMPLATE);
 
-                printf("Letter Wrote! Do you want to send it now? (0 - no & 1 - yes) \n");
-                scanf("%d", option);
+                printf("Letter Wrote! Do you want to send it now? (0 - no & 1 - yes): ");
+                scanf("%d ", &option);
+                fflush(stdin);
                 if (option)
                 {
-                    printf("Reciever Mail: \n");
-                    scanf("%s\n", recieverMail);
-                    printf("Whisper Mode: (0-Off & 1-On)\n");
-                    scanf("%d\n", option);
+                    fflush(stdin);
+                    printf("Reciever Mail: ");
+                    scanf("%s", recieverMail);
+                    printf("Whisper Mode: (0-Off & 1-On): ");
+                    scanf("%d", &option);
 
                     postLetter(account, recieverMail, *createdLetter, option);
                 }else{
                     printf("Letter saved as template. You can sand it later. \n");
+                    postLetter(account, "null", *createdLetter, 0);
                 }
                 
                 break;
@@ -188,15 +206,18 @@ int main()
                 break;
             case 4:
                 // Implement Show Template Letters
+
+
                 break;
             case 5:
                 // Implement Show Contact List
+                
                 break;
             case 6:
                 isLoggedIn = 0;
                 break;
             default:
-                printf("Invalid option. Please select 1 or 2.\n");
+                printf("Invalid option. Please select [1 - 6].\n");
                 break;
             }
         }

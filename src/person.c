@@ -42,13 +42,16 @@ Post *sentPosts(int id)
     int count = 0;
     for (int i = 0; i < postCount; i++)
     {
-        if (posts[i].sender.id == id)
+        if (posts[i].reciever.id != -1 && posts[i].sender.id == id)
         {
             recievedPostsArr[count] = posts[i];
             count++;
         }
     }
 
+    Post lastPost;
+    lastPost.id = -1;
+    recievedPostsArr[count] = lastPost;
     return recievedPostsArr;
 }
 
@@ -63,6 +66,37 @@ void removeSpaces(char *str)
         }
     }
     str[j] = '\0';
+}
+
+
+
+Person *showContentList(struct Person *self){
+    Post *recieved = recievedPosts(self->id);
+    Post *sent = recievedPosts(self->id);
+
+    Person *postIDs = malloc(sizeof(Person) * 50); 
+    int contactCount = 0;
+    int i = 0;
+    while (recieved[i].id != -1)
+    {
+        bool isExists = false;
+        for (int i = 0; i < contactCount; i++)
+        {
+            if (postIDs[i].id == recieved[i].sender.id)
+            {
+                isExists = true;
+            }
+        }
+        
+        if (!isExists)
+        {
+            postIDs[contactCount] = recieved[i].sender;
+            contactCount++;
+        }
+        
+    }
+    
+    
 }
 
 Person *createPerson(int id, char *name, char *surname, char *password)
