@@ -9,12 +9,14 @@ typedef struct Person
     char lastName[30];
     char mail[50];
     char password[30];
-    Person *(*showContentList)(struct Person *);
+    struct Person *(*showContactList)(struct Person *);
+    Post *(*getTemplates)(struct Person *);
 } Person;
 
 Post *recievedPosts(int id);
 Post *sentPosts(int id);
-Person *showContentList(struct Person *self);
+struct Person *showContactList(struct Person *self);
+Post *getTemplates(struct Person *self);
 
 Person *createPerson(int id, char *name, char *surname, char *password);
 

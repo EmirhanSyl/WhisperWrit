@@ -32,9 +32,8 @@ Post *recievedPosts(int id)
 
 Post *sentPosts(int id)
 {
-    Post *recievedPostsArr = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
-
-    if (recievedPostsArr == NULL)
+    Post *sentPosts = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
+    if (sentPosts == NULL)
     {
         return NULL;
     }
@@ -44,15 +43,38 @@ Post *sentPosts(int id)
     {
         if (posts[i].reciever.id != -1 && posts[i].sender.id == id)
         {
-            recievedPostsArr[count] = posts[i];
+            sentPosts[count] = posts[i];
             count++;
         }
     }
 
     Post lastPost;
     lastPost.id = -1;
-    recievedPostsArr[count] = lastPost;
-    return recievedPostsArr;
+    sentPosts[count] = lastPost;
+    return sentPosts;
+}
+
+Post *getTemplates(struct Person *self){
+    Post *templatePosts = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
+    if (templatePosts == NULL)
+    {
+        return NULL;
+    }
+
+    int count = 0;
+    for (int i = 0; i < postCount; i++)
+    {
+        if (posts[i].reciever.id == -1 && posts[i].sender.id == self->id)
+        {
+            templatePosts[count] = posts[i];
+            count++;
+        }
+    }
+
+    Post lastPost;
+    lastPost.id = -1;
+    templatePosts[count] = lastPost;
+    return templatePosts;
 }
 
 void removeSpaces(char *str)
@@ -68,13 +90,11 @@ void removeSpaces(char *str)
     str[j] = '\0';
 }
 
-
-
-Person *showContentList(struct Person *self){
+struct Person *showContactList(struct Person *self)
+{
     Post *recieved = recievedPosts(self->id);
-    Post *sent = recievedPosts(self->id);
-
-    Person *postIDs = malloc(sizeof(Person) * 50); 
+    Post *sent = sentPosts(self->id);
+    Person *contactList = malloc(sizeof(Person) * 50); 
     int contactCount = 0;
     int i = 0;
     while (recieved[i].id != -1)
@@ -82,7 +102,7 @@ Person *showContentList(struct Person *self){
         bool isExists = false;
         for (int i = 0; i < contactCount; i++)
         {
-            if (postIDs[i].id == recieved[i].sender.id)
+            if (contactList[i].id == recieved[i].sender.id)
             {
                 isExists = true;
             }
@@ -90,13 +110,35 @@ Person *showContentList(struct Person *self){
         
         if (!isExists)
         {
-            postIDs[contactCount] = recieved[i].sender;
+            contactList[contactCount] = recieved[i].sender;
             contactCount++;
         }
-        
+        i++;
     }
-    
-    
+
+    i = 0;
+    while (sent[i].id != -1)
+    {
+        bool isExists = false;
+        for (int i = 0; i < contactCount; i++)
+        {
+            if (contactList[i].id == sent[i].reciever.id)
+            {
+                isExists = true;
+            }
+        }
+
+        if (!isExists)
+        {
+            contactList[contactCount] = sent[i].reciever;
+            contactCount++;
+        }
+        i++;
+    }
+
+    Person last = {.id = -1};
+    contactList[contactCount] = last;
+    return contactList;
 }
 
 Person *createPerson(int id, char *name, char *surname, char *password)
@@ -122,6 +164,8 @@ Person *createPerson(int id, char *name, char *surname, char *password)
 
     strcpy(person->mail, mail);
     strcpy(person->password, password);
+    person->showContactList = showContactList;
+    person->getTemplates = getTemplates;
 
     insertPerson(*person);
     loadPersons();

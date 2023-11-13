@@ -2,7 +2,7 @@
 #define LETTER_H
 #include "person.h"
 
-typedef enum {TEMPLATE, SENT, SEEN} Status;
+typedef enum Status{TEMPLATE, SENT, SEEN} Status;
 static const char *const status_names[];
 
 typedef struct Letter

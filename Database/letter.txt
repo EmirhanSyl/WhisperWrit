@@ -1,12 +1,4 @@
 ID:0
-Subject:test
-Content:test
-Status:TEMPLATE
-ID:1
-Subject:a test1
-Content:a test
-Status:TEMPLATE
-ID:3
-Subject:b test2
-Content:b test
-Status:TEMPLATE
+Subject:seen test
+Content:check if post status changes - no :(
+Status:SEEN

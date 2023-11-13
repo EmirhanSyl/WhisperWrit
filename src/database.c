@@ -78,6 +78,8 @@ int loadPersons()
             break;
         case 4:
             strcpy(person->password, value);
+            person->showContactList = showContactList;
+            person->getTemplates = getTemplates;
             users[personCount] = *person;
             lineNum = 0;
             personCount++;
@@ -89,10 +91,6 @@ int loadPersons()
     userCount = personCount;
     printf("Persons Loaded\n");
     return 0;
-}
-
-int updatePerson(Person person)
-{
 }
 
 int insertLetter(Letter letter)
@@ -126,6 +124,7 @@ int loadLetters()
 
     Letter *letter;
     char chunk[512];
+    letterCount = 0;
     int lineNum = 0;
     while (fgets(chunk, sizeof(chunk), file) != NULL)
     {
@@ -154,11 +153,11 @@ int loadLetters()
             lineNum++;
             break;
         case 3:
-            if (value == status_names[TEMPLATE])
+            if (strcmp(value, status_names[TEMPLATE]) == 0)
             {
                 letter->status = TEMPLATE;
             }
-            else if (value == status_names[SENT])
+            else if (strcmp(value, status_names[SENT]) == 0)
             {
                 letter->status = SENT;
             }
@@ -174,7 +173,111 @@ int loadLetters()
             break;
         }
     }
+    fclose(file);
     printf("Letters Loaded\n");
+    return 0;
+}
+
+int deleteLetter(int id)
+{
+    FILE *file = fopen("../Database/letter.txt", "r");
+    FILE *temp = fopen("../Database/temp.txt", "w");
+
+    if (file == NULL || temp == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    Letter *letter;
+    char chunk[512];
+    int lineNum = 0;
+    bool skipLetter = false;
+    letterCount = 0;
+    while (fgets(chunk, sizeof(chunk), file) != NULL)
+    {
+        char *colon_pos = strchr(chunk, ':');
+        char *value;
+        if (colon_pos != NULL)
+        {
+            value = colon_pos + 1;
+            size_t newline_pos = strcspn(value, "\n");
+            value[newline_pos] = '\0';
+        }
+
+        switch (lineNum)
+        {
+        case 0:
+            if (atoi(value) == id)
+            {
+                skipLetter = true;
+                lineNum++;
+                break;
+            }
+            
+            letter = (Letter *)malloc(sizeof(Letter));
+            letter->id = atoi(value);
+            fprintf(temp, "ID:%d\n", letter->id);
+            lineNum++;
+            break;
+        case 1:
+            if (skipLetter)
+            {
+                lineNum++;
+                break;
+            }
+
+            strcpy(letter->subject, value);
+            fprintf(temp, "Subject:%s\n", letter->subject);
+            lineNum++;
+            break;
+        case 2:
+            if (skipLetter)
+            {
+                lineNum++;
+                break;
+            }
+
+            strcpy(letter->content, value);
+            fprintf(temp, "Content:%s\n", letter->content);
+            lineNum++;
+            break;
+        case 3:
+            if (skipLetter)
+            {
+                skipLetter = false;
+                lineNum = 0;
+                break;
+            }
+            if (strcmp(value, status_names[TEMPLATE]) == 0)
+            {
+                letter->status = TEMPLATE;
+            }
+            else if (strcmp(value, status_names[SENT]) == 0)
+            {
+                letter->status = SENT;
+            }
+            else
+            {
+                letter->status = SEEN;
+            }
+            fprintf(temp, "Status:%s\n", status_names[letter->status]);
+            letters[letterCount] = *letter;
+            lineNum = 0;
+            letterCount++;
+            break;
+        default:
+            break;
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    remove("../Database/letter.txt");
+    rename("../Database/temp.txt", "../Database/letter.txt");
+
+
     return 0;
 }
 
@@ -214,6 +317,7 @@ int loadPosts()
     Post *post;
     char chunk[512];
     int lineNum = 0;
+    postCount = 0;
     while (fgets(chunk, sizeof(chunk), file) != NULL)
     {
         char *colon_pos = strchr(chunk, ':');
@@ -245,11 +349,11 @@ int loadPosts()
             lineNum++;
             break;
         case 4:
-            if (value == mode_names[NORMAL])
+            if (strcmp(value, mode_names[NORMAL]) == 0)
             {
                 post->mode = NORMAL;
             }
-            else if (value == status_names[WHISPER])
+            else if (strcmp(value, mode_names[WHISPER]) == 0)
             {
                 post->mode = WHISPER;
             }
@@ -265,7 +369,127 @@ int loadPosts()
             break;
         }
     }
+
+    fclose(file);
     printf("Posts Loaded\n");
+    return 0;
+}
+
+int deletePost(int id)
+{
+    FILE *file = fopen("../Database/post.txt", "r");
+    FILE *temp = fopen("../Database/temp.txt", "w");
+
+    if (file == NULL || temp == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    Person *findPersonById(int id);
+    Letter findLetterById(int id);
+
+    Person templatePerson = {.id = -1, .mail = "template"};
+
+    Post *post;
+    char chunk[512];
+    int lineNum = 0;
+    bool skipPost = false;
+    letterCount = 0;
+    while (fgets(chunk, sizeof(chunk), file) != NULL)
+    {
+        char *colon_pos = strchr(chunk, ':');
+        char *value;
+        if (colon_pos != NULL)
+        {
+            value = colon_pos + 1;
+            size_t newline_pos = strcspn(value, "\n");
+            value[newline_pos] = '\0';
+        }
+
+        switch (lineNum)
+        {
+        case 0:
+            if (atoi(value) == id)
+            {
+                skipPost = true;
+                lineNum++;
+                break;
+            }
+
+            post = (Post *)malloc(sizeof(Post));
+            post->id = atoi(value);
+            fprintf(temp, "ID:%d\n", post->id);
+            lineNum++;
+            break;
+        case 1:
+            if (skipPost)
+            {
+                lineNum++;
+                break;
+            }
+
+            post->sender = *findPersonById(atoi(value));
+            fprintf(temp, "Subject:%s\n", value);
+            lineNum++;
+            break;
+        case 2:
+            if (skipPost)
+            {
+                lineNum++;
+                break;
+            }
+
+            post->reciever = (findPersonById(atoi(value)) == NULL) ? templatePerson : *findPersonById(atoi(value));
+            fprintf(temp, "Content:%s\n", value);
+            lineNum++;
+            break;
+        case 3:
+            if (skipPost)
+            {
+                lineNum++;
+                break;
+            }
+
+            post->letter = findLetterById(atoi(value));
+            fprintf(temp, "Content:%s\n", value);
+            lineNum++;
+            break;
+        case 4:
+            if (skipPost)
+            {
+                skipPost = false;
+                lineNum = 0;
+                break;
+            }
+            if (strcmp(value, mode_names[NORMAL]) == 0)
+            {
+                post->mode = NORMAL;
+            }
+            else if (strcmp(value, mode_names[WHISPER]) == 0)
+            {
+                post->mode = WHISPER;
+            }
+            else
+            {
+                post->mode = NORMAL;
+            }
+            fprintf(temp, "Status:%s\n", value);
+            posts[postCount] = *post;
+            lineNum = 0;
+            postCount++;
+            break;
+        default:
+            break;
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    remove("../Database/post.txt");
+    rename("../Database/temp.txt", "../Database/post.txt");
+
     return 0;
 }
 
