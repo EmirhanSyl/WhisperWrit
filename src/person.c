@@ -141,26 +141,18 @@ struct Person *showContactList(struct Person *self)
     return contactList;
 }
 
-Person *createPerson(int id, char *name, char *surname, char *password)
+Person *createPerson(int id, char *informations[])
 {
     Person *person = (Person *)malloc(sizeof(Person));
     person->id = id;
+    
+    char *name = informations[0];
+    char *surname = informations[1];
+    char *password = informations[2];
+    char *mail = informations[3];
+
     strcpy(person->firstName, name);
     strcpy(person->lastName, surname);
-
-    for (int i = 0; i < strlen(name); i++)
-    {
-        name[i] = tolower(name[i]);
-    }
-    for (int i = 0; i < strlen(surname); i++)
-    {
-        surname[i] = tolower(surname[i]);
-    }
-    removeSpaces(name);
-    removeSpaces(surname);
-    char *mail = name;
-    strcat(mail, surname);
-    strcat(mail, "@w.w");
 
     strcpy(person->mail, mail);
     strcpy(person->password, password);
@@ -170,4 +162,23 @@ Person *createPerson(int id, char *name, char *surname, char *password)
     insertPerson(*person);
     loadPersons();
     return person;
+}
+
+char *createMail(char *name, char *surname){
+    for (int i = 0; i < strlen(name); i++)
+    {
+        name[i] = tolower(name[i]);
+    }
+    for (int i = 0; i < strlen(surname); i++)
+    {
+        surname[i] = tolower(surname[i]);
+    }
+
+    removeSpaces(name);
+    removeSpaces(surname);
+    char *mail = name;
+    strcat(mail, surname);
+    strcat(mail, "@w.w");
+
+    return mail;
 }

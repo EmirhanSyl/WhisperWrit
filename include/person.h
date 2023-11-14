@@ -18,6 +18,6 @@ Post *sentPosts(int id);
 struct Person *showContactList(struct Person *self);
 Post *getTemplates(struct Person *self);
 
-Person *createPerson(int id, char *name, char *surname, char *password);
+Person *createPerson(int id, char *informations[]);
 
 #endif

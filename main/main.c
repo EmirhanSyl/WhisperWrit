@@ -4,6 +4,9 @@
 #include "../src/person.c"
 #include "../src/letter.c"
 #include "../src/post.c"
+#define ANSI_COLOR_BLUE "\x1b[34m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+#define PRINT_BLUE(str) printf(ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET, str)
 
 void writePostInfo(Post post)
 {
@@ -144,7 +147,7 @@ int main()
 
     while (1)
     {
-        printf("Welcome!\n");
+        PRINT_BLUE("Welcome!\n");
         if (isLoggedIn)
         {
             printf("\nWelcome, %s %s\n", account->firstName, account->lastName);
@@ -336,7 +339,7 @@ int main()
         {
             char firstName[30];
             char lastName[30];
-            char mail[50];
+            char *mail;
             char password[30];
             switch (option)
             {
@@ -373,7 +376,12 @@ int main()
                 printf("Enter your password: ");
                 scanf("%s", password);
 
-                account = createPerson(userCount, firstName, lastName, password);
+                mail = firstName;
+                strcat(mail, lastName);
+                strcat(mail, "@w.w");
+
+                char *information[] = {firstName, lastName, password, mail};
+                account = createPerson(userCount, information);
                 printf("Account created succesfully!\n");
                 isLoggedIn = 1;
                 break;
