@@ -55,6 +55,7 @@ Post *sentPosts(int id)
 }
 
 Post *getTemplates(struct Person *self){
+    printf("HEEEEELLLLLLLLLLLLOOOOOOOOOOOOOOOOOOO");
     Post *templatePosts = (Post *)malloc(100 * sizeof(Post)); // Allocate memory on the heap
     if (templatePosts == NULL)
     {

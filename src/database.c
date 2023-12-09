@@ -5,6 +5,10 @@
 #include "../include/letter.h"
 #include "../include/post.h"
 
+#define PERSON_BIN "../Database/person.bin"
+#define LETTER_BIN "../Database/letter.bin"
+#define POST_BIN "../Database/post.bin"
+
 static Letter letters[100];
 static int letterCount;
 static Person users[100];
@@ -12,7 +16,7 @@ static int userCount;
 static Post posts[500];
 static int postCount;
 
-int binaryInsertAnyStruct(void *insertElement, int size, char *fileName)
+int binaryInsertAnyStruct(void *insertElement, int size, char *fileName, int *arrSize)
 {
     FILE *file = fopen(fileName, "ab");
 
@@ -29,12 +33,13 @@ int binaryInsertAnyStruct(void *insertElement, int size, char *fileName)
         fclose(file);
         return 1;
     }
+    *arrSize = *arrSize+1;
 
     fclose(file);
     return 0;
 }
 
-int binaryReadAnyStruct(void *arr, int size, char *fileName)
+int binaryReadAnyStruct(void *arr, int size, char *fileName, int *arrSize)
 {
     FILE *file = fopen(fileName, "rb");
 
@@ -45,18 +50,20 @@ int binaryReadAnyStruct(void *arr, int size, char *fileName)
     }
 
     int i = 0;
-    while (fread(&arr[i], sizeof(Person), 1, file) != 0)
+    while (fread((char *)arr + i * size, size, 1, file) != 0)
     {
         i++;
     }
+    *arrSize = i;
 
     fclose(file);
 
     return 0;
 }
 
-int binaryInsertPerson(Person person){
-    FILE *file = fopen("../Database/person.bin", "ab");
+int binaryDeleteAnyStruct(int deleteElementIndex, void *arr, int *arrSize, int size, char *fileName)
+{
+    FILE *file = fopen(fileName, "wb");
 
     if (file == NULL)
     {
@@ -64,567 +71,48 @@ int binaryInsertPerson(Person person){
         return 1;
     }
 
-    size_t elements_written = fwrite(&person, sizeof(Person), 1, file);
-    if (elements_written != 1)
+    for (int i = 0; i < *arrSize; i++)
     {
-        perror("Error writing to file");
-        fclose(file);
-        return 1;
+        if (i == deleteElementIndex)
+        {
+            continue;
+        }
+
+        fwrite((char *)arr + i * size, size, 1, file);
     }
 
-    fclose(file);
-}
-
-Person *binaryReadPerson()
-{
-    Person *people = calloc(10, sizeof(Person));
-    // Open the binary file for reading
-    FILE *file = fopen("../Database/person.bin", "rb");
-
-    if (file == NULL)
+    // Shift elements to overwrite the struct at the specified index
+    for (int i = deleteElementIndex; i < (*arrSize) - 1; i++)
     {
-        perror("Error opening file");
-        return NULL;
+        memcpy((char *)arr + i * size, (char *)arr + (i + 1) * size, size);
     }
 
-    // Read the struct from the file
-    int i = 0;
-    while (fread(&people[i], sizeof(Person), 1, file) != 0)
-    {
-        i++;
-    }
-    
-    // Close the file
-    fclose(file);
-
-    return people;
-}
-
-
-
-int insertPerson(Person person)
-{
-    FILE *file = fopen("../Database/person.txt", "a");
-
-    if (file == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    fprintf(file, "ID:%d\n", person.id);
-    fprintf(file, "First Name:%s\n", person.firstName);
-    fprintf(file, "Last Name:%s\n", person.lastName);
-    fprintf(file, "Mail:%s\n", person.mail);
-    fprintf(file, "Password:%s\n", person.password);
+    *arrSize = *arrSize - 1;
 
     fclose(file);
     return 0;
 }
 
-int loadPersons()
+int binaryUpdateStruct(int updateElementIndex, void *arr, int *arrSize, int size, char *fileName)
 {
-    FILE *file = fopen("../Database/person.txt", "r");
-
-    if (file == NULL)
+    memcpy((char *)arr + ((*arrSize) * size), (char *)arr + updateElementIndex * size, size);
+    if (binaryInsertAnyStruct((char *)arr + updateElementIndex * size, size, fileName, arrSize) != 0)
     {
-        printf("Error while opening the file!");
-        return 1;
+        return 1; // Insert operation failed
     }
 
-    Person *person;
-    char chunk[128];
-    int lineNum = 0;
-    int personCount = 0;
-    while (fgets(chunk, sizeof(chunk), file) != NULL)
+    if (binaryDeleteAnyStruct(updateElementIndex, arr, arrSize, size, fileName) != 0)
     {
-        char *colon_pos = strchr(chunk, ':');
-        char *value;
-        if (colon_pos != NULL)
-        {
-            value = colon_pos + 1;
-            size_t newline_pos = strcspn(value, "\n");
-            value[newline_pos] = '\0';
-        }
-
-        switch (lineNum)
-        {
-        case 0:
-            person = (Person *)malloc(sizeof(Person));
-            person->id = atoi(value);
-            lineNum++;
-            break;
-        case 1:
-            strcpy(person->firstName, value);
-            lineNum++;
-            break;
-        case 2:
-            strcpy(person->lastName, value);
-            lineNum++;
-            break;
-        case 3:
-            strcpy(person->mail, value);
-            lineNum++;
-            break;
-        case 4:
-            strcpy(person->password, value);
-            person->showContactList = showContactList;
-            person->getTemplates = getTemplates;
-            users[personCount] = *person;
-            lineNum = 0;
-            personCount++;
-            break;
-        default:
-            break;
-        }
+        return 2; // Delete operation failed
     }
-    userCount = personCount;
-    printf("Persons Loaded\n");
-    return 0;
-}
-
-int insertLetter(Letter letter)
-{
-    FILE *file = fopen("../Database/letter.txt", "a");
-
-    if (file == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    fprintf(file, "ID:%d\n", letter.id);
-    fprintf(file, "Subject:%s\n", letter.subject);
-    fprintf(file, "Content:%s\n", letter.content);
-    fprintf(file, "Status:%s\n", status_names[letter.status]);
-
-    fclose(file);
-    return 0;
-}
-
-int loadLetters()
-{
-    FILE *file = fopen("../Database/letter.txt", "r");
-
-    if (file == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    Letter *letter;
-    char chunk[512];
-    letterCount = 0;
-    int lineNum = 0;
-    while (fgets(chunk, sizeof(chunk), file) != NULL)
-    {
-        char *colon_pos = strchr(chunk, ':');
-        char *value;
-        if (colon_pos != NULL)
-        {
-            value = colon_pos + 1;
-            size_t newline_pos = strcspn(value, "\n");
-            value[newline_pos] = '\0';
-        }
-
-        switch (lineNum)
-        {
-        case 0:
-            letter = (Letter *)malloc(sizeof(Letter));
-            letter->id = atoi(value);
-            lineNum++;
-            break;
-        case 1:
-            strcpy(letter->subject, value);
-            lineNum++;
-            break;
-        case 2:
-            strcpy(letter->content, value);
-            lineNum++;
-            break;
-        case 3:
-            if (strcmp(value, status_names[TEMPLATE]) == 0)
-            {
-                letter->status = TEMPLATE;
-            }
-            else if (strcmp(value, status_names[SENT]) == 0)
-            {
-                letter->status = SENT;
-            }
-            else
-            {
-                letter->status = SEEN;
-            }
-            letters[letterCount] = *letter;
-            lineNum = 0;
-            letterCount++;
-            break;
-        default:
-            break;
-        }
-    }
-    fclose(file);
-    printf("Letters Loaded\n");
-    return 0;
-}
-
-int deleteLetter(int id)
-{
-    FILE *file = fopen("../Database/letter.txt", "r");
-    FILE *temp = fopen("../Database/temp.txt", "w");
-
-    if (file == NULL || temp == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    Letter *letter;
-    char chunk[512];
-    int lineNum = 0;
-    bool skipLetter = false;
-    letterCount = 0;
-    while (fgets(chunk, sizeof(chunk), file) != NULL)
-    {
-        char *colon_pos = strchr(chunk, ':');
-        char *value;
-        if (colon_pos != NULL)
-        {
-            value = colon_pos + 1;
-            size_t newline_pos = strcspn(value, "\n");
-            value[newline_pos] = '\0';
-        }
-
-        switch (lineNum)
-        {
-        case 0:
-            if (atoi(value) == id)
-            {
-                skipLetter = true;
-                lineNum++;
-                break;
-            }
-            
-            letter = (Letter *)malloc(sizeof(Letter));
-            letter->id = atoi(value);
-            fprintf(temp, "ID:%d\n", letter->id);
-            lineNum++;
-            break;
-        case 1:
-            if (skipLetter)
-            {
-                lineNum++;
-                break;
-            }
-
-            strcpy(letter->subject, value);
-            fprintf(temp, "Subject:%s\n", letter->subject);
-            lineNum++;
-            break;
-        case 2:
-            if (skipLetter)
-            {
-                lineNum++;
-                break;
-            }
-
-            strcpy(letter->content, value);
-            fprintf(temp, "Content:%s\n", letter->content);
-            lineNum++;
-            break;
-        case 3:
-            if (skipLetter)
-            {
-                skipLetter = false;
-                lineNum = 0;
-                break;
-            }
-            if (strcmp(value, status_names[TEMPLATE]) == 0)
-            {
-                letter->status = TEMPLATE;
-            }
-            else if (strcmp(value, status_names[SENT]) == 0)
-            {
-                letter->status = SENT;
-            }
-            else
-            {
-                letter->status = SEEN;
-            }
-            fprintf(temp, "Status:%s\n", status_names[letter->status]);
-            letters[letterCount] = *letter;
-            lineNum = 0;
-            letterCount++;
-            break;
-        default:
-            break;
-        }
-    }
-
-    fclose(file);
-    fclose(temp);
-
-    remove("../Database/letter.txt");
-    rename("../Database/temp.txt", "../Database/letter.txt");
-
 
     return 0;
-}
-
-int insertPostman(Post postman)
-{
-    FILE *file = fopen("../Database/post.txt", "a");
-
-    if (file == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    fprintf(file, "ID:%d\n", postman.id);
-    fprintf(file, "Sender ID:%d\n", postman.sender.id);
-    fprintf(file, "Reciever ID:%d\n", postman.reciever.id);
-    fprintf(file, "Letter ID:%d\n", postman.letter.id);
-    fprintf(file, "Mode:%s\n", mode_names[postman.mode]);
-
-    fclose(file);
-    return 0;
-}
-
-int loadPosts()
-{
-    FILE *file = fopen("../Database/post.txt", "r");
-
-    if (file == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-    Person *findPersonById(int id);
-    Letter findLetterById(int id);
-
-    Person templatePerson = {.id = -1, .mail = "template"};
-    Post *post;
-    char chunk[512];
-    int lineNum = 0;
-    postCount = 0;
-    while (fgets(chunk, sizeof(chunk), file) != NULL)
-    {
-        char *colon_pos = strchr(chunk, ':');
-        char *value;
-        if (colon_pos != NULL)
-        {
-            value = colon_pos + 1;
-            size_t newline_pos = strcspn(value, "\n");
-            value[newline_pos] = '\0';
-        }
-
-        switch (lineNum)
-        {
-        case 0:
-            post = (Post *)malloc(sizeof(Post));
-            post->id = atoi(value);
-            lineNum++;
-            break;
-        case 1:
-            post->sender = *findPersonById(atoi(value));
-            lineNum++;
-            break;
-        case 2:
-            post->reciever = (findPersonById(atoi(value)) == NULL) ? templatePerson : *findPersonById(atoi(value));
-            lineNum++;
-            break;
-        case 3:
-            post->letter = findLetterById(atoi(value));
-            lineNum++;
-            break;
-        case 4:
-            if (strcmp(value, mode_names[NORMAL]) == 0)
-            {
-                post->mode = NORMAL;
-            }
-            else if (strcmp(value, mode_names[WHISPER]) == 0)
-            {
-                post->mode = WHISPER;
-            }
-            else
-            {
-                post->mode = NORMAL;
-            }
-            posts[postCount] = *post;
-            lineNum = 0;
-            postCount++;
-            break;
-        default:
-            break;
-        }
-    }
-
-    fclose(file);
-    printf("Posts Loaded\n");
-    return 0;
-}
-
-int deletePost(int id)
-{
-    FILE *file = fopen("../Database/post.txt", "r");
-    FILE *temp = fopen("../Database/temp.txt", "w");
-
-    if (file == NULL || temp == NULL)
-    {
-        printf("Error while opening the file!");
-        return 1;
-    }
-
-    Person *findPersonById(int id);
-    Letter findLetterById(int id);
-
-    Person templatePerson = {.id = -1, .mail = "template"};
-
-    Post *post;
-    char chunk[512];
-    int lineNum = 0;
-    bool skipPost = false;
-    letterCount = 0;
-    while (fgets(chunk, sizeof(chunk), file) != NULL)
-    {
-        char *colon_pos = strchr(chunk, ':');
-        char *value;
-        if (colon_pos != NULL)
-        {
-            value = colon_pos + 1;
-            size_t newline_pos = strcspn(value, "\n");
-            value[newline_pos] = '\0';
-        }
-
-        switch (lineNum)
-        {
-        case 0:
-            if (atoi(value) == id)
-            {
-                skipPost = true;
-                lineNum++;
-                break;
-            }
-
-            post = (Post *)malloc(sizeof(Post));
-            post->id = atoi(value);
-            fprintf(temp, "ID:%d\n", post->id);
-            lineNum++;
-            break;
-        case 1:
-            if (skipPost)
-            {
-                lineNum++;
-                break;
-            }
-
-            post->sender = *findPersonById(atoi(value));
-            fprintf(temp, "Sender ID:%s\n", value);
-            lineNum++;
-            break;
-        case 2:
-            if (skipPost)
-            {
-                lineNum++;
-                break;
-            }
-
-            post->reciever = (findPersonById(atoi(value)) == NULL) ? templatePerson : *findPersonById(atoi(value));
-            fprintf(temp, "Reciever ID:%s\n", value);
-            lineNum++;
-            break;
-        case 3:
-            if (skipPost)
-            {
-                lineNum++;
-                break;
-            }
-
-            post->letter = findLetterById(atoi(value));
-            fprintf(temp, "Letter ID:%s\n", value);
-            lineNum++;
-            break;
-        case 4:
-            if (skipPost)
-            {
-                skipPost = false;
-                lineNum = 0;
-                break;
-            }
-            if (strcmp(value, mode_names[NORMAL]) == 0)
-            {
-                post->mode = NORMAL;
-            }
-            else if (strcmp(value, mode_names[WHISPER]) == 0)
-            {
-                post->mode = WHISPER;
-            }
-            else
-            {
-                post->mode = NORMAL;
-            }
-            fprintf(temp, "Mode:%s\n", value);
-            posts[postCount] = *post;
-            lineNum = 0;
-            postCount++;
-            break;
-        default:
-            break;
-        }
-    }
-
-    fclose(file);
-    fclose(temp);
-
-    remove("../Database/post.txt");
-    rename("../Database/temp.txt", "../Database/post.txt");
-
-    return 0;
-}
-
-Person *findPersonById(int id)
-{
-    for (int i = 0; i < userCount; i++)
-    {
-        if (users[i].id == id)
-        {
-            return &users[i];
-        }
-    }
-    Person *nullP = NULL;
-    return nullP;
-}
-
-Letter findLetterById(int id)
-{
-    for (int i = 0; i < letterCount; i++)
-    {
-        if (letters[i].id == id)
-        {
-            return letters[i];
-        }
-    }
-}
-
-Person *login(char *mail, char *psw)
-{
-
-    for (int i = 0; i < userCount; i++)
-    {
-        if (strcmp(users[i].mail, mail) == 0 && strcmp(users[i].password, psw) == 0)
-        {
-            return &users[i];
-        }
-    }
-    Person *nullP = NULL;
-    return nullP;
 }
 
 int loadAllData()
 {
-    loadPersons();
-    loadLetters();
-    loadPosts();
+    binaryReadAnyStruct((void *)users, sizeof(Person), PERSON_BIN, userCount);
+    binaryReadAnyStruct((void *)letters, sizeof(Letter), LETTER_BIN, letterCount);
+    binaryReadAnyStruct((void *)posts, sizeof(Post), POST_BIN, postCount);
     return 0;
 }
