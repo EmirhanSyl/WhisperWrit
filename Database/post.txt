@@ -1,5 +1,11 @@
 ID:0
-Subject:0
-Content:1
-Content:0
-Status:NORMAL
+Sender ID:0
+Reciever ID:1
+Letter ID:0
+Mode:NORMAL
+ID:2
+Sender ID:0
+Reciever ID:-1
+Letter ID:2
+Mode:NORMAL
+

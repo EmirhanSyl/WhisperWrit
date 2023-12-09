@@ -1,4 +1,8 @@
+ID:2
+Subject:c
+Content:cc
+Status:TEMPLATE
 ID:0
-Subject:seen test
-Content:check if post status changes - no :(
+Subject:a
+Content:aa
 Status:SEEN

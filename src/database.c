@@ -12,6 +12,96 @@ static int userCount;
 static Post posts[500];
 static int postCount;
 
+int binaryInsertAnyStruct(void *insertElement, int size, char *fileName)
+{
+    FILE *file = fopen(fileName, "ab");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    size_t elements_written = fwrite(insertElement, size, 1, file);
+    if (elements_written != 1)
+    {
+        perror("Error writing to file");
+        fclose(file);
+        return 1;
+    }
+
+    fclose(file);
+    return 0;
+}
+
+int binaryReadAnyStruct(void *arr, int size, char *fileName)
+{
+    FILE *file = fopen(fileName, "rb");
+
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return 1;
+    }
+
+    int i = 0;
+    while (fread(&arr[i], sizeof(Person), 1, file) != 0)
+    {
+        i++;
+    }
+
+    fclose(file);
+
+    return 0;
+}
+
+int binaryInsertPerson(Person person){
+    FILE *file = fopen("../Database/person.bin", "ab");
+
+    if (file == NULL)
+    {
+        printf("Error while opening the file!");
+        return 1;
+    }
+
+    size_t elements_written = fwrite(&person, sizeof(Person), 1, file);
+    if (elements_written != 1)
+    {
+        perror("Error writing to file");
+        fclose(file);
+        return 1;
+    }
+
+    fclose(file);
+}
+
+Person *binaryReadPerson()
+{
+    Person *people = calloc(10, sizeof(Person));
+    // Open the binary file for reading
+    FILE *file = fopen("../Database/person.bin", "rb");
+
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    // Read the struct from the file
+    int i = 0;
+    while (fread(&people[i], sizeof(Person), 1, file) != 0)
+    {
+        i++;
+    }
+    
+    // Close the file
+    fclose(file);
+
+    return people;
+}
+
+
+
 int insertPerson(Person person)
 {
     FILE *file = fopen("../Database/person.txt", "a");
@@ -430,7 +520,7 @@ int deletePost(int id)
             }
 
             post->sender = *findPersonById(atoi(value));
-            fprintf(temp, "Subject:%s\n", value);
+            fprintf(temp, "Sender ID:%s\n", value);
             lineNum++;
             break;
         case 2:
@@ -441,7 +531,7 @@ int deletePost(int id)
             }
 
             post->reciever = (findPersonById(atoi(value)) == NULL) ? templatePerson : *findPersonById(atoi(value));
-            fprintf(temp, "Content:%s\n", value);
+            fprintf(temp, "Reciever ID:%s\n", value);
             lineNum++;
             break;
         case 3:
@@ -452,7 +542,7 @@ int deletePost(int id)
             }
 
             post->letter = findLetterById(atoi(value));
-            fprintf(temp, "Content:%s\n", value);
+            fprintf(temp, "Letter ID:%s\n", value);
             lineNum++;
             break;
         case 4:
@@ -474,7 +564,7 @@ int deletePost(int id)
             {
                 post->mode = NORMAL;
             }
-            fprintf(temp, "Status:%s\n", value);
+            fprintf(temp, "Mode:%s\n", value);
             posts[postCount] = *post;
             lineNum = 0;
             postCount++;

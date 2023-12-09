@@ -139,6 +139,16 @@ int main()
     //deleteLetter(1);
     //deletePost(1);
 
+    Person p = {.id=8, .firstName="Sare", .lastName="dsds", .mail="fdkşlsfk", .password="fd", .getTemplates=getTemplates, .showContactList=showContactList};
+    Person p2 = {.id=9, .firstName="Zahed", .lastName="ghj", .mail="khgj", .password="ghj", .getTemplates=getTemplates, .showContactList=showContactList};
+    binaryInsertTest(p);
+    binaryInsertTest(p2);
+    Person test;
+    Person test2;
+    Person *people = binaryReadTest();
+
+    printf("%s\n", people[1].firstName);
+    printf("%s\n", people[3].firstName);
     loadAllData();
 
     Person *account;
