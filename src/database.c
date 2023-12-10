@@ -36,7 +36,7 @@ int binaryInsertAnyStruct(void *insertElement, int size, char *fileName, int *ar
         fclose(file);
         return 1;
     }
-    *arrSize = *arrSize+1;
+    *arrSize = *arrSize + 1;
 
     fclose(file);
     return 0;
@@ -149,4 +149,40 @@ Person *login(char *mail, char *psw)
     }
     Person *nullP = NULL;
     return nullP;
+}
+
+int findLetterIndex(int id)
+{
+    for (int i = 0; i < letterCount; i++)
+    {
+        if (id == letters[i].id)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int findPostIndex(int id)
+{
+    for (int i = 0; i < postCount; i++)
+    {
+        if (id == posts[i].id)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int findPersonIndex(int id)
+{
+    for (int i = 0; i < userCount; i++)
+    {
+        if (id == users[i].id)
+        {
+            return i;
+        }
+    }
+    return -1;
 }

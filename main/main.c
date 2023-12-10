@@ -39,20 +39,20 @@ void readPost(Post post, int seen)
     if (post.mode == WHISPER)
     {
         printf("This letter will be destroyed forever!\n");
-        //deleteLetter(post.letter.id);
-        //deletePost(post.id);
-        //loadLetters();
-        //loadPosts();
+        binaryDeleteAnyStruct(findLetterIndex(post.letter.id), (void *)letters, &letterCount, sizeof(Letter), LETTER_BIN);
+        binaryDeleteAnyStruct(findPostIndex(post.id), (void *)posts, &postCount, sizeof(Post), POST_BIN);
     }
     else
     {
         // Update Letter Logic
-        int letterID = post.letter.id;
-        char *subject = post.letter.subject;
-        char *content = post.letter.content;
-        //deleteLetter(letterID);
-        post.letter = *createLetter(letterID, subject, content, SEEN);
-        //loadLetters();
+        int letterIndex = findLetterIndex(post.letter.id);
+        int postIndex = findPostIndex(post.id);
+
+        letters[letterIndex].status = SEEN;
+        binaryUpdateStruct(letterIndex, letters, &letterCount, sizeof(Letter), LETTER_BIN);
+
+        posts[postIndex].letter.status = SEEN;
+        binaryUpdateStruct(postIndex, posts, &postCount, sizeof(Post), POST_BIN);
     }
 }
 
@@ -110,40 +110,29 @@ int editPost(Post post, char *newSubject, char *newMessage, char *recieverMail, 
         return 1;
     }
 
-    for (int i = 0; i < letterCount; i++)
-    {
-        if (letters[i].id == letterID)
-        {
-            strcpy(letters[i].subject, newSubject);
-            strcpy(letters[i].content, newMessage);
-            letters[i].status = SENT;
-            binaryUpdateStruct(i, letters, &letterCount, sizeof(Letter), LETTER_BIN);
-        }
-    }
-    
-    for (int i = 0; i < postCount; i++)
-    {
-        if (posts[i].id == postID)
-        {
-            post.sender = sender;
-            post.reciever = reciever;
-            post.letter = letters[letterCount-1];
-            post.mode = mode;
-            binaryUpdateStruct(i, posts, &postCount, sizeof(Post), POST_BIN);
-        }
-        
-    }
+    int letterIndex = findLetterIndex(letterID);
+    strcpy(letters[letterIndex].subject, newSubject);
+    strcpy(letters[letterIndex].content, newMessage);
+    letters[letterIndex].status = SENT;
+    binaryUpdateStruct(letterIndex, letters, &letterCount, sizeof(Letter), LETTER_BIN);
 
-    readPost(posts[postCount-1], 0);
+    int postIndex = findPostIndex(postID);
+    posts[postIndex].sender = sender;
+    posts[postIndex].reciever = reciever;
+    posts[postIndex].letter = letters[letterCount - 1];
+    posts[postIndex].mode = mode;
+    binaryUpdateStruct(postIndex, posts, &postCount, sizeof(Post), POST_BIN);
+
+    readPost(posts[postCount - 1], 0);
     return 0;
 }
 
 int main()
 {
-    //char *information[] = {"emirhan", "soylu", "es@g.c", "123"};
-    //Person *p = createPerson(0, information);
-    // Person p2 = createPerson(1, "olivia", "monster", "om@g.c", "321");
-    // Letter letter = createLetter(0, "test", "test", TEMPLATE);
+    // char *information[] = {"emirhan", "soylu", "es@g.c", "123"};
+    // Person *p = createPerson(0, information);
+    //  Person p2 = createPerson(1, "olivia", "monster", "om@g.c", "321");
+    //  Letter letter = createLetter(0, "test", "test", TEMPLATE);
 
     // printf("Mail: %s\n", users[0].mail);
     // printf("Mail: %s\n", users[1].mail);
@@ -185,6 +174,7 @@ int main()
             printf("3- Exit\n");
         }
 
+        fflush(stdin);
         printf("Select an option: ");
         scanf("%d", &option);
 
@@ -289,7 +279,7 @@ int main()
                 break;
             case 4:
                 // Implement Show Template Letters
-                recieved = account->getTemplates(account);
+                recieved = getTemplates(account);
                 while (recieved[recievedPostCount].id != -1)
                 {
                     readPost(recieved[recievedPostCount], 0);
@@ -311,22 +301,9 @@ int main()
                     if (!secondOption)
                     {
                         // Delete Post
-                        // Change this with functions...
-                        for (int i = 0; i < letterCount; i++)
-                        {
-                            if (recieved[option].letter.id == letters[i].id)
-                            {
-                                binaryDeleteAnyStruct(i, (void *)letters, &letterCount, sizeof(Letter), LETTER_BIN);
-                            }
-                        }
-                        for (int i = 0; i < postCount; i++)
-                        {
-                            if (recieved[option].id == posts[i].id)
-                            {
-                                binaryDeleteAnyStruct(i, (void *)posts, &postCount, sizeof(Post), POST_BIN);
-                            }
-                        }
-                        
+                        binaryDeleteAnyStruct(findLetterIndex(recieved[option].letter.id), (void *)letters, &letterCount, sizeof(Letter), LETTER_BIN);
+                        binaryDeleteAnyStruct(findPostIndex(recieved[option].id), (void *)posts, &postCount, sizeof(Post), POST_BIN);
+
                         printf("Letter DESTROYED Successfully!\n");
                         break;
                     }
