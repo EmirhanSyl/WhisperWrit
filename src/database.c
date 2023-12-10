@@ -9,12 +9,15 @@
 #define LETTER_BIN "../Database/letter.bin"
 #define POST_BIN "../Database/post.bin"
 
-static Letter letters[100];
-static int letterCount;
-static Person users[100];
-static int userCount;
-static Post posts[500];
-static int postCount;
+Letter letters[100];
+int letterCount;
+int biggestLetterId;
+Person users[100];
+int userCount;
+int biggestUserId;
+Post posts[500];
+int postCount;
+int biggestPostId;
 
 int binaryInsertAnyStruct(void *insertElement, int size, char *fileName, int *arrSize)
 {
@@ -111,8 +114,39 @@ int binaryUpdateStruct(int updateElementIndex, void *arr, int *arrSize, int size
 
 int loadAllData()
 {
-    binaryReadAnyStruct((void *)users, sizeof(Person), PERSON_BIN, userCount);
-    binaryReadAnyStruct((void *)letters, sizeof(Letter), LETTER_BIN, letterCount);
-    binaryReadAnyStruct((void *)posts, sizeof(Post), POST_BIN, postCount);
+    binaryReadAnyStruct((void *)users, sizeof(Person), PERSON_BIN, &userCount);
+    binaryReadAnyStruct((void *)letters, sizeof(Letter), LETTER_BIN, &letterCount);
+    binaryReadAnyStruct((void *)posts, sizeof(Post), POST_BIN, &postCount);
+
+    biggestUserId = users[0].id;
+    for (int i = 0; i < userCount; i++)
+    {
+        biggestUserId = (users[i].id > biggestUserId) ? users[i].id : biggestUserId;
+    }
+    biggestLetterId = letters[0].id;
+    for (int i = 0; i < letterCount; i++)
+    {
+        biggestLetterId = (letters[i].id > biggestLetterId) ? letters[i].id : biggestLetterId;
+    }
+    biggestPostId = posts[0].id;
+    for (int i = 0; i < postCount; i++)
+    {
+        biggestPostId = (posts[i].id > biggestPostId) ? posts[i].id : biggestPostId;
+    }
+
     return 0;
+}
+
+Person *login(char *mail, char *psw)
+{
+
+    for (int i = 0; i < userCount; i++)
+    {
+        if (strcmp(users[i].mail, mail) == 0 && strcmp(users[i].password, psw) == 0)
+        {
+            return &users[i];
+        }
+    }
+    Person *nullP = NULL;
+    return nullP;
 }

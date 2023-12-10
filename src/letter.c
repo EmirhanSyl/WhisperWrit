@@ -16,8 +16,8 @@ Letter *createLetter(int id, char *subject, char *content, Status status)
     strcpy(letter->content, content);
     letter->status = status;
 
-    insertLetter(*letter);
-    loadLetters();
+    letters[letterCount] = *letter;
+    binaryInsertAnyStruct((void *)letter, sizeof(Letter), LETTER_BIN, &letterCount);
     return letter;
 }
 

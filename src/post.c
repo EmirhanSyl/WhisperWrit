@@ -15,7 +15,7 @@ Post sendPostman(int id, Person sender, Person reciever, Letter letter,  MODE mo
     post.letter = letter;
     post.mode = mode;
 
-    insertPostman(post);
-    loadPosts();
+    posts[postCount] = post;
+    binaryInsertAnyStruct((void *)&post, sizeof(Post), POST_BIN, &postCount);
     return post;
 }

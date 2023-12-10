@@ -39,10 +39,10 @@ void readPost(Post post, int seen)
     if (post.mode == WHISPER)
     {
         printf("This letter will be destroyed forever!\n");
-        deleteLetter(post.letter.id);
-        deletePost(post.id);
-        loadLetters();
-        loadPosts();
+        //deleteLetter(post.letter.id);
+        //deletePost(post.id);
+        //loadLetters();
+        //loadPosts();
     }
     else
     {
@@ -50,9 +50,9 @@ void readPost(Post post, int seen)
         int letterID = post.letter.id;
         char *subject = post.letter.subject;
         char *content = post.letter.content;
-        deleteLetter(letterID);
+        //deleteLetter(letterID);
         post.letter = *createLetter(letterID, subject, content, SEEN);
-        loadLetters();
+        //loadLetters();
     }
 }
 
@@ -83,7 +83,7 @@ int postLetter(Person *sender, char *recieverMail, Letter createdLetter, int whi
         return 1;
     }
 
-    sendPostman(postCount, *sender, reciever, createdLetter, mode);
+    sendPostman(biggestPostId, *sender, reciever, createdLetter, mode);
     return 0;
 }
 
@@ -94,14 +94,6 @@ int editPost(Post post, char *newSubject, char *newMessage, char *recieverMail, 
     Person sender = post.sender;
     int postID = post.id;
     int letterID = post.letter.id;
-    if (newMessage == "\0")
-    {
-        newMessage = post.letter.content;
-    }
-    if (newSubject == "\0")
-    {
-        newSubject = post.letter.subject;
-    }
 
     bool isUserExists = false;
     for (int i = 0; i < userCount; i++)
@@ -118,18 +110,38 @@ int editPost(Post post, char *newSubject, char *newMessage, char *recieverMail, 
         return 1;
     }
 
-    deleteLetter(letterID);
-    Letter updatedLetter = *createLetter(letterID, newSubject, newMessage, SENT);
-    deletePost(postID);
-    Post updatedPost = sendPostman(postID, sender, reciever, updatedLetter, mode);
+    for (int i = 0; i < letterCount; i++)
+    {
+        if (letters[i].id == letterID)
+        {
+            strcpy(letters[i].subject, newSubject);
+            strcpy(letters[i].content, newMessage);
+            letters[i].status = SENT;
+            binaryUpdateStruct(i, letters, &letterCount, sizeof(Letter), LETTER_BIN);
+        }
+    }
+    
+    for (int i = 0; i < postCount; i++)
+    {
+        if (posts[i].id == postID)
+        {
+            post.sender = sender;
+            post.reciever = reciever;
+            post.letter = letters[letterCount-1];
+            post.mode = mode;
+            binaryUpdateStruct(i, posts, &postCount, sizeof(Post), POST_BIN);
+        }
+        
+    }
 
-    readPost(updatedPost, 0);
+    readPost(posts[postCount-1], 0);
     return 0;
 }
 
 int main()
 {
-    // Person p = createPerson(0, "emirhan", "soylu", "es@g.c", "123");
+    //char *information[] = {"emirhan", "soylu", "es@g.c", "123"};
+    //Person *p = createPerson(0, information);
     // Person p2 = createPerson(1, "olivia", "monster", "om@g.c", "321");
     // Letter letter = createLetter(0, "test", "test", TEMPLATE);
 
@@ -144,309 +156,286 @@ int main()
     // deleteLetter(1);
     // deletePost(1);
 
-    //Person p = {.id = 8, .firstName = "Sare", .lastName = "dsds", .mail = "fdkşlsfk", .password = "fd", .getTemplates = getTemplates, .showContactList = showContactList};
-    //Person p2 = {.id = 9, .firstName = "Zahed", .lastName = "ghj", .mail = "khgj", .password = "ghj", .getTemplates = getTemplates, .showContactList = showContactList};
-    //binaryInsertAnyStruct(&p, sizeof(Person), "../Database/person.bin", &userCount);
-    //binaryInsertAnyStruct(&p2, sizeof(Person), "../Database/person.bin", &userCount);
-
-    /*Person people[20];
-    binaryReadAnyStruct((void*)people, sizeof(Person), "../Database/person.bin", &userCount);
-
-    printf("%s\n", people[0].firstName);
-    printf("%s\n", people[1].firstName);*/
-
-    //Letter l1 = {.id=0, .subject="Hi", .content="Some Message", .status=TEMPLATE};
-    //Letter l2 = {.id=1, .subject="Hi again", .content="Some Message", .status=SENT};
-    //binaryInsertAnyStruct(&l1, sizeof(Letter), "../Database/letter.bin", &letterCount);
-    //binaryInsertAnyStruct(&l2, sizeof(Letter), "../Database/letter.bin", &letterCount);
-
-    /*Letter letters[20];
-    binaryReadAnyStruct((void *)letters, sizeof(Letter), "../Database/letter.bin", &letterCount);
-
-    printf("%s\n", status_names[letters[0].status]);
-    printf("%s\n", status_names[letters[1].status]);*/
-
-    /*Post post1 = {.id=0, .sender=p, .reciever=p2, .letter=l1, .mode=WHISPER};
-    Post post2 = {.id = 1, .sender = p2, .reciever = p, .letter = l2, .mode = NORMAL};
-    binaryInsertAnyStruct(&post1, sizeof(Post), "../Database/post.bin", &postCount);
-    binaryInsertAnyStruct(&post2, sizeof(Post), "../Database/post.bin", &postCount);*/
-
-    Post posts[20];
-    binaryReadAnyStruct((void *)posts, sizeof(Post), "../Database/post.bin", &postCount);
-    for (int i = 0; i < postCount; i++)
-    {
-        if (posts[i].id == 0)
-        {
-            posts[i].mode = NORMAL;
-            binaryUpdateStruct(i, (void *)posts, &postCount, sizeof(Post), "../Database/post.bin");
-        }
-    }
-
-    for (int i = 0; i < postCount; i++)
-    {
-        printf("%s\n", mode_names[posts[i].mode]);
-    }
-    
-    
-    //printf("%s\n", posts[1].reciever.firstName);
+    // printf("%s\n", posts[1].reciever.firstName);
     printf("%d\n", postCount);
-    /*
-        loadAllData();
 
-        Person *account;
-        int option;
-        int isLoggedIn = 0;
+    loadAllData();
 
+    Person *account;
+    int option;
+    int isLoggedIn = 0;
 
-        while (1)
+    while (1)
+    {
+        PRINT_BLUE("Welcome!\n");
+        if (isLoggedIn)
         {
-            PRINT_BLUE("Welcome!\n");
-            if (isLoggedIn)
-            {
-                printf("\nWelcome, %s %s\n", account->firstName, account->lastName);
-                printf("1- Create Letter\n");
-                printf("2- Show Recieved Letters\n");
-                printf("3- Show Sent Letters\n");
-                printf("4- Show Template Letters\n");
-                printf("5- Show Contact List\n");
-                printf("6- Logout\n");
-            }
-            else
-            {
-                printf("1- Login\n");
-                printf("2- Register\n");
-                printf("3- Exit\n");
-            }
+            printf("\nWelcome, %s %s\n", account->firstName, account->lastName);
+            printf("1- Create Letter\n");
+            printf("2- Show Recieved Letters\n");
+            printf("3- Show Sent Letters\n");
+            printf("4- Show Template Letters\n");
+            printf("5- Show Contact List\n");
+            printf("6- Logout\n");
+        }
+        else
+        {
+            printf("1- Login\n");
+            printf("2- Register\n");
+            printf("3- Exit\n");
+        }
 
-            printf("Select an option: ");
-            scanf("%d", &option);
+        printf("Select an option: ");
+        scanf("%d", &option);
 
-            if (isLoggedIn)
+        if (isLoggedIn)
+        {
+            Post *recieved;
+            Person *contacts;
+            Letter *createdLetter;
+            Letter *createdPost;
+            int recievedPostCount = 0;
+            int secondOption = 0;
+            char subject[100];
+            char message[500];
+            char recieverMail[50];
+            switch (option)
             {
-                Post *recieved;
-                Person *contacts;
-                Letter *createdLetter;
-                Letter *createdPost;
-                int recievedPostCount = 0;
-                int secondOption = 0;
-                char subject[100];
-                char message[500];
-                char recieverMail[50];
-                switch (option)
+            case 1:
+                // Implement create letter
+                printf("Subject: ");
+                fflush(stdin);
+                gets(subject);
+
+                printf("Message: ");
+                fflush(stdin);
+                gets(message);
+
+                printf("Letter Wrote! Do you want to send it now? (0 - no & 1 - yes): ");
+                scanf("%d ", &option);
+                fflush(stdin);
+                if (option)
                 {
-                case 1:
-                    // Implement create letter
-                    printf("Subject: ");
+                    createdLetter = createLetter(biggestLetterId, subject, message, SENT);
+                    fflush(stdin);
+                    printf("Reciever Mail: ");
+                    scanf("%s", recieverMail);
+                    printf("Whisper Mode: (0-Off & 1-On): ");
+                    scanf("%d", &option);
+
+                    postLetter(account, recieverMail, *createdLetter, option);
+                }
+                else
+                {
+                    createdLetter = createLetter(letterCount, subject, message, TEMPLATE);
+                    printf("Letter saved as template. You can sand it later. \n");
+                    postLetter(account, "null", *createdLetter, 0);
+                }
+
+                break;
+            case 2:
+                // Implement Show Recieved Letters
+                recieved = recievedPosts(account->id);
+                while (recieved[recievedPostCount].id != -1)
+                {
+                    writePostInfo(recieved[recievedPostCount]);
+                    recievedPostCount++;
+                }
+
+                if (recievedPostCount == 0)
+                {
+                    printf("No recieved Message\n");
+                    break;
+                }
+
+                printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
+                scanf("%d", &option);
+
+                if (option >= 0 && option <= recievedPostCount)
+                {
+                    readPost(recieved[option], 1);
+                }
+                else
+                {
+                    printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
+                }
+
+                break;
+            case 3:
+                // Implement Show Sent Letters
+                recieved = sentPosts(account->id);
+                while (recieved[recievedPostCount].id != -1)
+                {
+                    writePostInfo(recieved[recievedPostCount]);
+                    recievedPostCount++;
+                }
+
+                if (recievedPostCount == 0)
+                {
+                    printf("No recieved Message!\n");
+                    break;
+                }
+
+                printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
+                scanf("%d", &option);
+                if (option >= 0 && option <= recievedPostCount)
+                {
+                    readPost(recieved[option], 0);
+                }
+                else
+                {
+                    printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
+                }
+                break;
+            case 4:
+                // Implement Show Template Letters
+                recieved = account->getTemplates(account);
+                while (recieved[recievedPostCount].id != -1)
+                {
+                    readPost(recieved[recievedPostCount], 0);
+                    recievedPostCount++;
+                }
+
+                if (recievedPostCount == 0)
+                {
+                    printf("No recieved Message!\n");
+                    break;
+                }
+
+                printf("Choose a letter to edit (%d - %d): ", 0, recievedPostCount);
+                scanf("%d", &option);
+                if (option >= 0 && option <= recievedPostCount)
+                {
+                    printf("Do you want to edit your letter or destroy it forever? (0-Delete & 1-Edit): ");
+                    scanf("%d", &secondOption);
+                    if (!secondOption)
+                    {
+                        // Delete Post
+                        // Change this with functions...
+                        for (int i = 0; i < letterCount; i++)
+                        {
+                            if (recieved[option].letter.id == letters[i].id)
+                            {
+                                binaryDeleteAnyStruct(i, (void *)letters, &letterCount, sizeof(Letter), LETTER_BIN);
+                            }
+                        }
+                        for (int i = 0; i < postCount; i++)
+                        {
+                            if (recieved[option].id == posts[i].id)
+                            {
+                                binaryDeleteAnyStruct(i, (void *)posts, &postCount, sizeof(Post), POST_BIN);
+                            }
+                        }
+                        
+                        printf("Letter DESTROYED Successfully!\n");
+                        break;
+                    }
+
+                    // Update Post
+                    printf("Enter New Subject: ");
                     fflush(stdin);
                     gets(subject);
 
-                    printf("Message: ");
+                    printf("Enter New Message: ");
                     fflush(stdin);
                     gets(message);
 
-                    printf("Letter Wrote! Do you want to send it now? (0 - no & 1 - yes): ");
-                    scanf("%d ", &option);
                     fflush(stdin);
-                    if (option)
-                    {
-                        createdLetter = createLetter(letterCount, subject, message, SENT);
-                        fflush(stdin);
-                        printf("Reciever Mail: ");
-                        scanf("%s", recieverMail);
-                        printf("Whisper Mode: (0-Off & 1-On): ");
-                        scanf("%d", &option);
-
-                        postLetter(account, recieverMail, *createdLetter, option);
-                    }else{
-                        createdLetter = createLetter(letterCount, subject, message, TEMPLATE);
-                        printf("Letter saved as template. You can sand it later. \n");
-                        postLetter(account, "null", *createdLetter, 0);
-                    }
-
-                    break;
-                case 2:
-                    // Implement Show Recieved Letters
-                    recieved = recievedPosts(account->id);
-                    while (recieved[recievedPostCount].id != -1)
-                    {
-                        writePostInfo(recieved[recievedPostCount]);
-                        recievedPostCount++;
-                    }
-
-                    if (recievedPostCount == 0){printf("No recieved Message\n"); break;}
-
-                    printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
+                    printf("Reciever Mail: ");
+                    scanf("%s", recieverMail);
+                    printf("Whisper Mode: (0-Off & 1-On): ");
                     scanf("%d", &option);
 
-                    if (option >= 0 && option <= recievedPostCount)
-                    {
-                        readPost(recieved[option], 1);
-                    }else{
-                        printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
-                    }
-
-                    break;
-                case 3:
-                    // Implement Show Sent Letters
-                    recieved = sentPosts(account->id);
-                    while (recieved[recievedPostCount].id != -1)
-                    {
-                        writePostInfo(recieved[recievedPostCount]);
-                        recievedPostCount++;
-                    }
-
-                    if (recievedPostCount == 0)
-                    {
-                        printf("No recieved Message!\n");
-                        break;
-                    }
-
-                    printf("Choose a letter to read (%d - %d): ", 0, recievedPostCount);
-                    scanf("%d", &option);
-                    if (option >= 0 && option <= recievedPostCount)
-                    {
-                        readPost(recieved[option], 0);
-                    }
-                    else
-                    {
-                        printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
-                    }
-                    break;
-                case 4:
-                    // Implement Show Template Letters
-                    recieved = account->getTemplates(account);
-                    while (recieved[recievedPostCount].id != -1)
-                    {
-                        readPost(recieved[recievedPostCount], 0);
-                        recievedPostCount++;
-                    }
-
-                    if (recievedPostCount == 0)
-                    {
-                        printf("No recieved Message!\n");
-                        break;
-                    }
-
-                    printf("Choose a letter to edit (%d - %d): ", 0, recievedPostCount);
-                    scanf("%d", &option);
-                    if (option >= 0 && option <= recievedPostCount)
-                    {
-                        printf("Do you want to edit your letter or destroy it forever? (0-Delete & 1-Edit): ");
-                        scanf("%d", &secondOption);
-                        if (!secondOption)
-                        {
-                            //Delete Post
-                            deleteLetter(recieved[option].letter.id);
-                            deletePost(recieved[option].id);
-                            printf("Letter DESTROYED Successfully!\n");
-                            loadAllData();
-                            break;
-                        }
-
-                        //Update Post
-                        printf("Enter New Subject (Leave blank to not change): ");
-                        fflush(stdin);
-                        gets(subject);
-
-                        printf("Enter New Message (Leave blank to not change): ");
-                        fflush(stdin);
-                        gets(message);
-
-                        fflush(stdin);
-                        printf("Reciever Mail: ");
-                        scanf("%s", recieverMail);
-                        printf("Whisper Mode: (0-Off & 1-On): ");
-                        scanf("%d", &option);
-
-                        editPost(recieved[option], subject, message, recieverMail, option);
-                        loadAllData();
-                    }
-                    else
-                    {
-                        printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
-                    }
-                    break;
-                case 5:
-                    // Implement Show Contact List
-                    printf("\n---------------------------\n");
-                    printf("CONTACTS:\n");
-                    contacts = account->showContactList(account);
-                    int z = 0;
-                    while (contacts[z].id != -1)
-                    {
-                        printf("%s\n", contacts[z].mail);
-                        z++;
-                    }
-                    printf("---------------------------\n");
-                    printf("Contact Count Calculated:%d\n", z);
-                    break;
-                case 6:
-                    isLoggedIn = 0;
-                    break;
-                default:
-                    printf("Invalid option. Please select [1 - 6].\n");
-                    break;
+                    editPost(recieved[option], subject, message, recieverMail, option);
+                    loadAllData();
                 }
-            }
-            else
-            {
-                char firstName[30];
-                char lastName[30];
-                char *mail;
-                char password[30];
-                switch (option)
+                else
                 {
-                case 1:
-
-                    printf("Enter your mail: ");
-                    scanf("%s", mail);
-
-                    printf("Enter your password: ");
-                    scanf("%s", password);
-
-                    printf("Logging in...\n");
-                    account = login(mail, password);
-                    if (account != NULL)
-                    {
-                        printf("Successfuly logged in!\n");
-                        isLoggedIn = 1;
-                        break;
-                    }
-                    else
-                    {
-                        printf("User not found! Please try again.\n");
-                        continue;
-                    }
-
-                    break;
-                case 2:
-                    printf("Enter your first name: ");
-                    scanf("%s", firstName);
-
-                    printf("Enter your last name: ");
-                    scanf("%s", lastName);
-
-                    printf("Enter your password: ");
-                    scanf("%s", password);
-
-                    mail = firstName;
-                    strcat(mail, lastName);
-                    strcat(mail, "@w.w");
-
-                    char *information[] = {firstName, lastName, password, mail};
-                    account = createPerson(userCount, information);
-                    printf("Account created succesfully!\n");
-                    isLoggedIn = 1;
-                    break;
-                case 3:
-                    printf("Goodbye!\n");
-                    return 0;
-                default:
-                    printf("Invalid option. Please select 1, 2, or 3.\n");
-                    break;
+                    printf("Invalid option. Please select %d - %d.\n", 0, recievedPostCount);
                 }
+                break;
+            case 5:
+                // Implement Show Contact List
+                printf("\n---------------------------\n");
+                printf("CONTACTS:\n");
+                contacts = account->showContactList(account);
+                int z = 0;
+                while (contacts[z].id != -1)
+                {
+                    printf("%s\n", contacts[z].mail);
+                    z++;
+                }
+                printf("---------------------------\n");
+                printf("Contact Count Calculated:%d\n", z);
+                break;
+            case 6:
+                isLoggedIn = 0;
+                break;
+            default:
+                printf("Invalid option. Please select [1 - 6].\n");
+                break;
             }
         }
-    */
+        else
+        {
+            char firstName[30];
+            char lastName[30];
+            char mail[50];
+            char password[30];
+            switch (option)
+            {
+            case 1:
+
+                printf("Enter your mail: ");
+                scanf("%s", mail);
+
+                printf("Enter your password: ");
+                scanf("%s", password);
+
+                printf("Logging in...\n");
+                account = login(mail, password);
+                if (account != NULL)
+                {
+                    printf("Successfuly logged in!\n");
+                    isLoggedIn = 1;
+                    break;
+                }
+                else
+                {
+                    printf("User not found! Please try again.\n");
+                    continue;
+                }
+
+                break;
+            case 2:
+                printf("Enter your first name: ");
+                scanf("%s", firstName);
+
+                printf("Enter your last name: ");
+                scanf("%s", lastName);
+
+                printf("Enter your password: ");
+                scanf("%s", password);
+
+                strcpy(mail, firstName);
+                strcat(mail, lastName);
+                strcat(mail, "@w.w");
+
+                char *information[] = {firstName, lastName, password, mail};
+                account = createPerson(biggestUserId, information);
+                biggestUserId++;
+                printf("Account created succesfully!\n");
+                isLoggedIn = 1;
+                break;
+            case 3:
+                printf("Goodbye!\n");
+                return 0;
+            default:
+                printf("Invalid option. Please select 1, 2, or 3.\n");
+                break;
+            }
+        }
+    }
+
     return 0;
 }
