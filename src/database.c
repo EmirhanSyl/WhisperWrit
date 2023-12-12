@@ -151,6 +151,24 @@ Person *login(char *mail, char *psw)
     return nullP;
 }
 
+int clearBinaryFile(char *fileName){
+    FILE *file = fopen(fileName, "wb");
+
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return -1;
+    }
+
+    fclose(file);
+}
+
+int clearDatabase(){
+    clearBinaryFile(LETTER_BIN);
+    clearBinaryFile(POST_BIN);
+    //clearBinaryFile(PERSON_BIN);
+}
+
 int findLetterIndex(int id)
 {
     for (int i = 0; i < letterCount; i++)

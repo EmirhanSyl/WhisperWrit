@@ -17,5 +17,7 @@ typedef struct Post
 }Post;
 
 Post sendPostman(int id, Person sender, Person reciever, Letter letter, MODE mode);
+int markAsSeen(Post post);
+int postLetter(Person *sender, char *recieverMail, Letter createdLetter, int whisperMode);
 
 #endif
